@@ -87,7 +87,7 @@ onAuthStateChanged(auth,async u=>{
   try{ const p=await getDoc(doc(db,"users",u.uid)); if(!p.exists()||p.data().role!=="teacher") throw 0; }
   catch(e){ $("lm").textContent="Tài khoản này không phải giáo viên."; await signOut(auth); return; }
   $("loginBox").classList.add("hide"); $("app").classList.remove("hide"); $("out").classList.remove("hide");
-  load(); keyState();
+  try{localStorage.setItem("bp11:teacher","1")}catch(e){} load(); keyState();
 });
 async function keyState(){ try{ const s=await getDoc(doc(db,"bp11_secret","key")); $("keyState").innerHTML=s.exists()?"✅ Mã giải mã đã được cài – khóa học đang hoạt động.":"⚠️ Chưa cài mã giải mã – học viên chưa mở được tài liệu."; }catch(e){ $("keyState").textContent="Không đọc được cài đặt ("+e.code+")."; } }
 $("kb").onclick=async()=>{ const c=$("kc").value.trim(); if(c.length<12) return msg("km","Mã quá ngắn.");
