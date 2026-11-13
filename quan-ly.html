@@ -59,10 +59,9 @@ td .e{font-weight:600;word-break:break-all}td .n{color:var(--muted);font-size:.8
 
 <div class="card" id="pgCard"><div class="row" style="margin-top:0;justify-content:space-between"><h2 style="margin:0">📈 Tiến độ tự học tuần này</h2>
 <div class="row" style="margin:0"><button class="btn ghost sm" id="pgReload">↻ Tải lại</button></div></div>
-<p style="font-size:.9rem;color:var(--muted);margin:6px 0 0">Ngày “đạt” = học sinh làm xong <b>Học 10 phút</b> hoặc từ 10 câu trở lên. Số liệu gửi lên khi học sinh mở trang có mạng. Gán tổ cho từng em ở cột <b>Tổ</b> trong danh sách học viên bên dưới.</p>
+<p style="font-size:.9rem;color:var(--muted);margin:6px 0 0">Ngày “đạt” = học sinh làm xong <b>Học 10 phút</b> hoặc từ 10 câu trở lên. Số liệu gửi lên khi học sinh mở trang có mạng.</p>
 <div id="pgLazy" style="margin-top:12px"></div>
-<div id="pgTeams" style="margin-top:12px"></div>
-<div style="overflow-x:auto;margin-top:12px"><table><thead><tr><th>Học sinh</th><th>Tổ</th><th>Lần gần nhất</th><th>🔥</th><th>Tuần này</th><th>Câu sai còn</th><th>Dạng yếu nhất</th></tr></thead><tbody id="pgT"><tr><td colspan="7">Đang tải…</td></tr></tbody></table></div></div>
+<div style="overflow-x:auto;margin-top:12px"><table><thead><tr><th>Học sinh</th><th>Lần gần nhất</th><th>🔥</th><th>Tuần này</th><th>Câu sai còn</th><th>Dạng yếu nhất</th></tr></thead><tbody id="pgT"><tr><td colspan="6">Đang tải…</td></tr></tbody></table></div></div>
 <div class="card"><h2>🔑 Cài đặt khóa học</h2>
 <div class="tip">Học viên chỉ cần: mở link khóa học → bấm <b>Đăng nhập bằng Google</b> → chọn đúng Gmail đã gửi cô. Muốn chặn em nào, bấm <b>Khóa</b> (lần mở trang tiếp theo em đó sẽ không vào được, chậm nhất sau 20 phút).</div>
 <p id="keyState" style="font-size:.9rem;color:var(--muted)"></p>
@@ -109,7 +108,7 @@ function render(){
   $("sMonth").textContent=rows.filter(r=>{const d=r.addedAt?.toDate?.(); return d&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
   $("sExp").textContent=rows.filter(r=>!active(r)).length;
   const list=rows.filter(r=>!q||[r.id,r.name,r.phone,r.note].join(" ").toLowerCase().includes(q));
-  $("tb").innerHTML=list.length?list.map(r=>`<tr><td><div class="e">${esc(r.name)} <select data-team="${esc(r.id)}" title="Tổ" style="margin-left:6px;padding:2px 4px;font-size:.8rem;border-radius:8px">${TEAMS.map(t=>`<option value="${t}" ${String(r.team||"")===t?"selected":""}>${t?"Tổ "+t:"– tổ –"}</option>`).join("")}</select></div><div class="n">${esc(r.id)}${r.phone?" · "+esc(r.phone):""}</div></td>
+  $("tb").innerHTML=list.length?list.map(r=>`<tr><td><div class="e">${esc(r.name)}</div><div class="n">${esc(r.id)}${r.phone?" · "+esc(r.phone):""}</div></td>
   <td>${active(r)?'<span class="tag on">Đang học</span>':(r.locked?'<span class="tag off">Đã khóa</span>':'<span class="tag off">Hết hạn</span>')}<div class="n">đến ${fmt(r.until)}</div></td>
   <td><div class="n">${fmt(r.addedAt)}</div><div class="n">${esc(r.note)}</div></td>
   <td><div class="tools"><button class="btn ghost sm" data-a="lock" data-id="${esc(r.id)}">${r.locked?"Mở khóa":"Khóa"}</button><button class="btn ghost sm" data-a="ext" data-id="${esc(r.id)}">Gia hạn</button><button class="btn ghost sm" data-a="del" data-id="${esc(r.id)}">Xóa</button></div></td></tr>`).join(""):'<tr><td colspan="4">Chưa có học viên nào.</td></tr>';
@@ -119,9 +118,9 @@ $("q").oninput=render;
 const TEAMS=["","1","2","3","4"];
 const wkId=()=>{const x=new Date();const w=(x.getDay()+6)%7;x.setDate(x.getDate()-w);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
 async function loadProgress(){
-  const T=$("pgT");T.innerHTML='<tr><td colspan="7">Đang tải…</td></tr>';
+  const T=$("pgT");T.innerHTML='<tr><td colspan="6">Đang tải…</td></tr>';
   let P={},R={};
-  try{(await getDocs(collection(db,"bp11_progress"))).docs.forEach(d=>P[d.id]=d.data());}catch(e){T.innerHTML='<tr><td colspan="7">Chưa đọc được tiến độ (kiểm tra Firestore Rules cho bp11_progress).</td></tr>';return;}
+  try{(await getDocs(collection(db,"bp11_progress"))).docs.forEach(d=>P[d.id]=d.data());}catch(e){T.innerHTML='<tr><td colspan="6">Chưa đọc được tiến độ (kiểm tra Firestore Rules cho bp11_progress).</td></tr>';return;}
   try{(await getDocs(collection(db,"bp11_report"))).docs.forEach(d=>R[d.id]=d.data());}catch(e){}
   const wk=wkId(),now=Date.now();
   const list=rows.filter(active).map(r=>{const p=P[r.id]||{},rp=R[r.id]||{};const last=p.last&&p.last.toMillis?p.last.toMillis():0;
@@ -129,21 +128,16 @@ async function loadProgress(){
     return {r,p,rp,last,wd:p.week===wk?p.wd||0:0,wq:p.week===wk?p.wq||0:0,idle:!last||now-last>7*864e5,dg};});
   list.sort((a,b)=>(a.idle-b.idle)||(a.wd-b.wd)||(a.wq-b.wq));
   const idle=list.filter(x=>x.idle),low=list.filter(x=>!x.idle&&x.wd<3);
-  const msgTxt=idle.length?`Các em ${idle.map(x=>x.r.name).join(", ")} ơi, 7 ngày rồi cô chưa thấy em vào trang tự học 😊 Hôm nay mở trang, bấm “▶ Học 10 phút” giúp cô nhé – chỉ 10 phút thôi, giữ chuỗi 🔥 cho tổ mình nha!`:"";
+  const msgTxt=idle.length?`Các em ${idle.map(x=>x.r.name).join(", ")} ơi, 7 ngày rồi cô chưa thấy em vào trang tự học 😊 Hôm nay mở trang, bấm “▶ Học 10 phút” giúp cô nhé – chỉ 10 phút thôi, giữ chuỗi 🔥 của em nha!`:"";
   $("pgLazy").innerHTML=`<div style="display:grid;gap:8px">
    <div style="padding:10px 14px;border-radius:12px;background:#FDECEC"><b>😴 Chưa học 7 ngày qua (${idle.length}):</b> ${idle.map(x=>esc(x.r.name)).join(", ")||"không có – tuyệt vời!"}
    ${idle.length?`<div class="row" style="margin:8px 0 0"><button class="btn sm" id="pgCopy">📋 Copy tin nhắc gửi Zalo</button><span class="msg" id="pgCm"></span></div>`:""}</div>
    <div style="padding:10px 14px;border-radius:12px;background:#FFF6E0"><b>⚠️ Tuần này chưa đủ 3 ngày (${low.length}):</b> ${low.map(x=>esc(x.r.name)+" ("+x.wd+")").join(", ")||"–"}</div></div>`;
   if(idle.length)$("pgCopy").onclick=async()=>{try{await navigator.clipboard.writeText(msgTxt);msg("pgCm","Đã copy – dán vào nhóm Zalo lớp.",true);}catch(e){msg("pgCm","Không copy được: "+msgTxt);}};
-  const tm={};list.forEach(x=>{const t=x.r.team;if(!t)return;const o=tm[t]||(tm[t]={t,n:0,wd:0,wq:0,on:0});o.n++;o.wd+=x.wd;o.wq+=x.wq;if(x.wd>=3)o.on++;});
-  const tl=Object.values(tm).map(o=>({...o,pt:Math.round((o.wd*10+o.wq/5)/o.n)})).sort((a,b)=>b.pt-a.pt);
-  $("pgTeams").innerHTML=tl.length?`<b>🏆 Thi đua tổ tuần này:</b> `+tl.map((o,i)=>`<span class="tag ${i?"":"on"}" style="margin:2px 4px;display:inline-block">${["🥇","🥈","🥉"][i]||""} Tổ ${esc(o.t)}: ${o.pt} điểm · ${o.on}/${o.n} em đạt</span>`).join(""):'<span style="color:var(--muted);font-size:.9rem">Chưa gán tổ – chọn tổ cho từng em ở danh sách học viên.</span>';
   const ago=ms=>{if(!ms)return "chưa mở";const d=Math.floor((now-ms)/864e5);return d<=0?"hôm nay":d===1?"hôm qua":d+" ngày trước";};
-  T.innerHTML=list.length?list.map(x=>`<tr style="${x.idle?"background:#FDF3F3":""}"><td><div class="e">${esc(x.r.name)}</div><div class="n">${esc(x.r.id)}</div></td><td>${esc(x.r.team||"–")}</td><td>${ago(x.last)}</td><td>${x.p.streak||0}</td><td><b>${x.wd}</b> ngày · ${x.wq} câu</td><td>${x.rp.errs??"–"}</td><td>${x.dg?esc(x.dg.k)+" "+Math.round(x.dg.p*100)+"%":"–"}</td></tr>`).join(""):'<tr><td colspan="7">Chưa có học sinh.</td></tr>';
+  T.innerHTML=list.length?list.map(x=>`<tr style="${x.idle?"background:#FDF3F3":""}"><td><div class="e">${esc(x.r.name)}</div><div class="n">${esc(x.r.id)}</div></td><td>${ago(x.last)}</td><td>${x.p.streak||0}</td><td><b>${x.wd}</b> ngày · ${x.wq} câu</td><td>${x.rp.errs??"–"}</td><td>${x.dg?esc(x.dg.k)+" "+Math.round(x.dg.p*100)+"%":"–"}</td></tr>`).join(""):'<tr><td colspan="6">Chưa có học sinh.</td></tr>';
 }
 $("pgReload").onclick=loadProgress;
-$("tb").addEventListener("change",async e=>{const s=e.target.closest("select[data-team]");if(!s)return;const id=s.dataset.team;s.disabled=true;
-  try{await updateDoc(doc(db,"bp11_students",id),{team:s.value});const r=rows.find(x=>x.id===id);if(r)r.team=s.value;s.disabled=false;loadProgress();}catch(err){s.disabled=false;alert("Không lưu được tổ: "+err.message);}});
 
 $("tb").onclick=async e=>{ const b=e.target.closest("button"); if(!b) return; const id=b.dataset.id, r=rows.find(x=>x.id===id); b.disabled=true;
   try{
